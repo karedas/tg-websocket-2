@@ -12,9 +12,10 @@
     "resolveJsonModule": true,
     "noImplicitAny": true,
     "outDir": "build",
+    "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*"]
     }
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "build"]
 }

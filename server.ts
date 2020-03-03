@@ -6,6 +6,8 @@ import expressSession from "express-session";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import socketIo = require("socket.io");
+import winston from "winston";
+import expressWsinton from "express-winston";
 
 import sharedSession = require("express-socket.io-session");
 import http = require("http");
@@ -50,20 +52,42 @@ function boot(app: Application, port: string | number) {
       limit: "50mb"
     })
   );
-  app.use(session, cookieParser('$eCuRiTy'));
+  app.use(session, cookieParser("$eCuRiTy"));
 
-  
-  
-  startSocketServer(io);
+  //Log
+  const fileLogger = new winston.transports.File({
+    level: "info",
+    filename: "wsServer.log",
+    dirname: "./logs",
+    maxsize: 100 * 1024 * 1024,
+    maxFiles: 4,
+    format: winston.format.combine(
+      winston.format.timestamp({
+        format: "YYYY-MM-DD hh:mm:ss A ZZ"
+      }),
+      winston.format.json()
+    )
+  });
 
-  
+  const Logger = winston.createLogger({
+    transports: [fileLogger]
+  });
+
+  app.use(
+    expressWsinton.logger({
+      transports: [new winston.transports.Console()],
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.json()
+      )
+    })
+  );
 
   server.listen(port, () => {
+    startSocketServer(io);
     console.log(`App Listening on port ${port}`);
   });
 }
-
-// =================
 
 const app = express();
 boot(app, PORT);
