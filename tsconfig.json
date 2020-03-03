@@ -12,7 +12,6 @@
     "resolveJsonModule": true,
     "noImplicitAny": true,
     "outDir": "build",
-    "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*"]
     }

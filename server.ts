@@ -5,16 +5,16 @@ import bodyParser from "body-parser";
 import expressSession from "express-session";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import net from 'net';
+import socketIo = require("socket.io");
 
 import sharedSession = require("express-socket.io-session");
 import http = require("http");
-import socketIo = require("socket.io");
 import sharedsession from "express-socket.io-session";
-import { calcCodeFromHeaders, getclientIp } from "./utils";
+import { PORT } from "./config/constant";
+import { startSocketServer } from "./core/userServerConnection";
 
 const {
-  env: { NODE_ENV, WS_PORT, SESSION_SECRET, SERVER_GAME_PORT }
+  env: { NODE_ENV, SESSION_SECRET, SERVER_GAME_PORT }
 } = process;
 
 const session = expressSession({
@@ -23,12 +23,19 @@ const session = expressSession({
   saveUninitialized: false
 });
 
-function boot(app: Application, port: number) {
+function boot(app: Application, port: string | number) {
   const server = http.createServer(app);
+
   const io = socketIo.listen(server, {
     pingInterval: 2000,
     pingTimeout: 5000
   });
+
+  io.use(
+    sharedsession(session, {
+      autoSave: true
+    })
+  );
 
   app.set("trust_proxy", 1);
   app.set("max_requests_per_ip", 20);
@@ -43,69 +50,20 @@ function boot(app: Application, port: number) {
       limit: "50mb"
     })
   );
-  app.use(session, cookieParser(SESSION_SECRET));
+  app.use(session, cookieParser('$eCuRiTy'));
 
-  io.use(
-    sharedsession(session, {
-      autoSave: true
-    })
-  );
+  
+  
+  startSocketServer(io);
 
-  io.on("connection", socket => {
-    socket.on("loginrequest", () => {
-      socket.emit("auth", '&!connmsg{"msg":"ready"}!');
-    });
-    socket.on("registration", () => {});
-    socket.on("oob", msg => handleLoginUser(socket, msg));
-    socket.on("disconnect", () => {
-      // Connection close
-    });
-  });
+  
 
   server.listen(port, () => {
     console.log(`App Listening on port ${port}`);
   });
 }
 
-function handleLoginUser(socket: socketIo.Socket, msg: any) {
-  if (msg["itime"]) {
-    let account_id = 0;
-    let headers = socket.handshake.headers;
-    let codeHeaders = calcCodeFromHeaders(headers);
-    let client_ip = getclientIp(headers);
-    let codeitime = msg["itime"];
-    let clientCode = `${codeitime}-${codeHeaders}`;
-  }
-}
-
-function connectToGameServer(
-  WSocket: socketIo.Socket,
-  ipaddress: string,
-  itime: string,
-  header: any,
-  accountId: number
-) {
-  let port: any = SERVER_GAME_PORT || 7890;
-  let tgconn = net.connect({
-      port 
-  });
-
-  tgconn.on('close', () => {
-      //
-  })
-  tgconn.on('error', () => {
-      //
-  })
-  tgconn.on('end', () => {
-      //
-  })
-  tgconn.on('timeout', () => {
-      //
-  })
-}
-
 // =================
 
 const app = express();
-const port = (WS_PORT && Number(WS_PORT)) || 3335;
-boot(app, port);
+boot(app, PORT);
