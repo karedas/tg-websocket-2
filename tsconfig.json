@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES5",
-    "module": "CommonJS",
+    "target": "es6",
+    "module": "commonJS",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -12,7 +12,9 @@
     "resolveJsonModule": true,
     "noImplicitAny": true,
     "outDir": "build",
+    "strictNullChecks": false,
     "baseUrl": ".",
+    "rootDir": ".",
     "paths": {
       "*": ["node_modules/*"]
     }
