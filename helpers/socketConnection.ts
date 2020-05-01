@@ -1,12 +1,13 @@
 import { calcCodeFromHeaders, getclientIp } from "../utils";
 import { Logger } from "../server";
 import * as net from "net";
+import { config } from "../core/config";
 
 const {
-  env: { SERVER_GAME_PORT }
+  env: { SERVER_GAME_PORT },
 } = process;
 
-export class ConnectionUser {
+export class SocketConnection {
   inGame: boolean;
   user: string;
   socket: SocketIO.Socket;
@@ -27,35 +28,54 @@ export class ConnectionUser {
       ipAddress: "",
       iTime: null,
       codeHeader: null,
-      accountId: 0
+      accountId: 0,
     };
   }
 
-  startSocketSession = () => {
-    this.socket.on("loginrequest", () => {
-      Logger.info(
-        `Login process requests by ${this.socket.handshake.address}.`
-      );
-      this.socket.emit("auth", '&!connmsg{"msg":"ready"}!');
+  init() {
+    this.socket.emit("auth", '&!connmsg{"msg":"ready"}!');
+
+    this.socket.on("disconnect", this.closeServerConnection);
+
+    this.socket.on("oob", (when) => {
+      if (when["itime"]) {
+        this.userNetInfo.accountId = 0;
+        this.userNetInfo.ipAddress = getclientIp(this.socket.handshake.headers);
+        this.userNetInfo.iTime = when["itime"];
+        this.userNetInfo.codeHeader = calcCodeFromHeaders(
+          this.socket.handshake.headers
+        );
+        this.connectToGameServer();
+	  } else {
+		  this.closeServerConnection();
+	  }
     });
-    // socket.on("registration", () => {});
-    this.socket.on("oob", this.userConnection);
-  };
+  }
 
-  userConnection = (data: any) => {
-    if (data["itime"]) {
-      (this.userNetInfo.accountId = 0),
-        (this.userNetInfo.ipAddress = getclientIp(
-          this.socket.handshake.headers
-        ));
-      (this.userNetInfo.iTime = data["itime"]),
-        (this.userNetInfo.codeHeader = calcCodeFromHeaders(
-          this.socket.handshake.headers
-        ));
+  connectToGameServer = () => {
+    this.tgConn = net.connect(<net.NetConnectOpts>{
+      host: <any>config.game_host,
+      port: <any>config.game_port,
+    });
 
-      this.connectToGameServer();
-      this.socket.on("disconnect", this.closeServerConnection);
-    }
+    this.tgConn.on("close", () => {
+      this.socket.disconnect();
+    });
+
+    this.tgConn.on("error", () => {
+      this.sendToClient('&!connmsg{"msg":"serverdown"}!');
+      this.socket.disconnect();
+    });
+
+    this.tgConn.on("end", () => {
+      this.socket.disconnect();
+    });
+
+    this.tgConn.on("timeout", () => {
+      this.socket.disconnect();
+    });
+
+    this.tgConn.on("data", this.handshake.bind(this));
   };
 
   closeServerConnection() {
@@ -64,42 +84,18 @@ export class ConnectionUser {
     }
   }
 
-  connectToGameServer = () => {
-    let port: any = SERVER_GAME_PORT || 4000;
-    this.tgConn = net.connect({
-      port: port,
-      host: "127.0.0.1"
-    })
-
-    this.tgConn.on("close", () => {
-      console.log('close');
-
-      this.socket.disconnect();
-    });
-    this.tgConn.on("error", () => {
-      this.sendToClient('&!connmsg{"msg":"serverdown"}!');
-      this.socket.disconnect();
-    });
-    this.tgConn.on("end", () => {
-      console.log('end');
-      this.socket.disconnect();
-    });
-    this.tgConn.on("timeout", () => {
-      console.log('timeout');
-      this.socket.disconnect();
-    });
-
-    this.tgConn.on("data", this.handshake.bind(this));
-  };
-
   handshake = (data?: Buffer) => {
     if (data.toString().indexOf("Vuoi i codici ANSI") !== -1) {
       this.tgConn.removeListener("data", this.handshake);
-      this.tgConn.on("data", (data) => {
-        console.log(data.toString())
+      // this.tgConn.on("data", (data) => {
+      //   console.log(data.toString());
+      // });
+      this.socket.once("login", (auth: { name: string; pwd: string }) => {
+        Logger.info(`Tentativo di login effettuato per ${auth.name}`);
+        this.user = auth.name;
+        this.sendToServer(`login:${auth.name}, ${auth.pwd}`);
       });
 
-      this.socket.once("login", this.sendAuthToServer.bind(this));
       this.socket.on("data", this.sendToServer.bind(this));
       //--------- Send credentials event phase ----------- //
       const { ipAddress, iTime, codeHeader, accountId } = this.userNetInfo;
@@ -109,11 +105,6 @@ export class ConnectionUser {
     } else {
       this.sendToClient(data);
     }
-  };
-  sendAuthToServer = (auth: { name: string; pwd: string }) => {
-    Logger.info(`Tentativo di login effettuato per ${auth.name}`);
-    this.user = auth.name;
-    this.sendToServer(`login:${auth.name}, ${auth.pwd}`);
   };
 
   sendToClient = (data: Buffer | string) => {

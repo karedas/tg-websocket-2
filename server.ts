@@ -8,10 +8,11 @@ import expressSession from "express-session";
 import cors from "cors";
 import winston from "winston";
 import express_socket_io_session from "express-socket.io-session";
+import compression from 'compression';
 
 import http = require("http");
 import socketIo = require("socket.io");
-import { ConnectionUser } from "./core/userConnection";
+import { SocketConnection } from "./helpers/socketConnection";
 
 const session = expressSession({
   secret: "$eCuRiTy",
@@ -26,19 +27,19 @@ const consoleLogger = new winston.transports.Console({
 const fileLogger = new winston.transports.File({
   level: "info",
   filename: "tg-access.log",
-  dirname: "log",
+  dirname: "logs",
   maxsize: 100 * 1024 * 1024,
   maxFiles: 4,
 });
 
 const transports =
-process.env.NODE_ENV === "development"
-  ? [consoleLogger, fileLogger]
-  : [fileLogger];
+  process.env.NODE_ENV === "development"
+    ? [consoleLogger, fileLogger]
+    : [fileLogger];
 
 export const Logger = winston.createLogger({
-transports: transports
-})
+  transports: transports,
+});
 
 function boot(app: Application, port: number) {
   const server = http.createServer(app);
@@ -50,9 +51,12 @@ function boot(app: Application, port: number) {
   app.set("trust_proxy", 1);
   app.set("max_requests_per_ip", 20);
   app.use(cors());
-  app.use(bodyParser.urlencoded({
-    extended: true,
-  }));
+  app.use(compression());
+  app.use(
+    bodyParser.urlencoded({
+      extended: true,
+    })
+  );
 
   app.use(
     bodyParser.json({
@@ -60,24 +64,24 @@ function boot(app: Application, port: number) {
     })
   );
 
-  // app.use(session, cookieParser(config('')));
+  socketIo.listen(server, {
+    pingInterval: 2000,
+    pingTimeout: 5000,
+  });
+
+  io.use(
+    express_socket_io_session(session, {
+      autoSave: true,
+    })
+  );
+
+  io.on("connection", (socket) => {
+    const socketConnection =  new SocketConnection(server, socket);
+    socketConnection.init();
+  });
+
   server.listen(port, () => {
     console.log(`App Listening on port ${port}`);
-  });
-}
-
-const socketServer = (server: http.Server) => {
-  const io = socketIo.listen(server, {
-    pingInterval: 2000,
-    pingTimeout: 5000
-  })
-
-  io.use(express_socket_io_session(session, {
-    autoSave: true
-  }));
-
-  io.on('connection', socket => {
-    new ConnectionUser(server, socket).startSocketSession();
   });
 }
 

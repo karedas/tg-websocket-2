@@ -14,10 +14,7 @@
     "outDir": "build",
     "strictNullChecks": false,
     "baseUrl": ".",
-    "rootDir": ".",
-    "paths": {
-      "*": ["node_modules/*"]
-    }
+    "rootDir": "."
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }
