@@ -8,6 +8,7 @@ import http from "http";
 
 import { config } from "./core/config";
 import router from "./routes";
+import path from "path";
 
 const {
   env: { NODE_ENV, API_PORT },
@@ -51,8 +52,10 @@ function boot(app: Application, port: number) {
     })
   );
   app.use(bodyParser.json());
+  app.set('view engine', 'ejs');
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use("/api", router);
+  app.use(express.static(path.join(__dirname, 'public')));
 
   app.use(clientErrorHandler);
 

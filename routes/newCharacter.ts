@@ -2,12 +2,14 @@ import net, { NetConnectOpts } from "net";
 import express from "express";
 import validator from "validator";
 import { config } from "../core/config";
+import { registerNewCharacter } from "../helpers/mailer";
+
 
 const router = express.Router();
-
-
+ 
 router.post("/", (_request, _response, _next) => {
   const {
+    race,
     ethnicity,
     culture,
     location,
@@ -32,9 +34,6 @@ router.post("/", (_request, _response, _next) => {
   // const {
   //   strength,
   // } = attributes;
-
-  console.log(_request.body)
-  console.log('EMAIL', email);
 
   if (!validator.isEmail(email)) {
     _response.status(400).json({ status: "error", message: "Email non valida" });
@@ -75,6 +74,16 @@ router.post("/", (_request, _response, _next) => {
   //   console.log('connected');
   //   // netConnection.write(timeStamp.toString(16));
   // })
+
+  let splitPwd = password.split('');
+  let maskedPwd = '';
+  for(let i = 0; i < splitPwd.length; i++) {
+    if(i > 0  && i < splitPwd.length - 1) {
+      maskedPwd += '*';
+    } else maskedPwd += splitPwd[i];
+  }
+  registerNewCharacter({email, name, gender, race, ethnicity, culture, location, maskedPwd})
+  
 
   _response.status(200).send('OK');
 });

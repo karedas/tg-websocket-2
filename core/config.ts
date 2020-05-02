@@ -1,10 +1,10 @@
-import dotenv from "dotenv";
-dotenv.config();
+// import dotenv from "dotenv";
+// dotenv.config();
 
-const result = dotenv.config();
-if (result.error) {
-  throw result.error;
-}
+// const result = dotenv.config();
+// if (result.error) {
+//   throw result.error;
+// }
 
 export const config = {
   game_host: process.env.SERVER_GAME_HOST,
@@ -13,11 +13,12 @@ export const config = {
   ws_port: process.env.WS_PORT,
   api_port: process.env.API_PORT,
   mailserver: {
-    host: process.env.MAILSERVER_HOST,
-    port: process.env.PORT,
+    from: 'staff@thegatemud.it',
+    host: process.env.API_NODEMAILER_SMTP,
+    port: +process.env.API_NODEMAILER_PORT,
     auth: {
-      user: process.env.MAILSERVER_USER,
-      pass: process.env.MAILSERVER_PWD,
+      user: process.env.API_NODEMAILER_USER,
+      pass: process.env.API_NODEMAILER_PASS,
     },
     debug: process.env.NODE_ENV ? true : false,
     logger: process.env.NODE_ENV ? true : false

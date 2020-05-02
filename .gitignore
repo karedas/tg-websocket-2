@@ -2,4 +2,4 @@
 /tmp/
 /build/
 *.env
-/log/*.log
+/logs/*.log
