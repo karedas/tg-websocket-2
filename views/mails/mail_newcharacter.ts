@@ -19,12 +19,11 @@ export const newCharacterHtml = (data?: any) => {
     <mj-attributes>
       <mj-all padding="0px"></mj-all>
       <mj-text font-family="Ubuntu, Helvetica, Arial, sans-serif" padding="0 25px" font-size="13px"></mj-text>
-      <mj-section background-color="#ffffff"></mj-section>
+      <mj-section background-color="#f0ece6"></mj-section>
       <mj-class name="preheader" color="#000000" font-size="11px"></mj-class>
     </mj-attributes>
-    <mj-style inline="inline">a { text-decoration: none!important; color: inherit!important; }</mj-style>
   </mj-head>
-  <mj-body background-color="#e6d8be">
+  <mj-body background-color="#1a1511">
     <mj-section>
       <mj-column width="600px">
         <mj-image src="https://i.ibb.co/5xZ99KZ/header-mail.jpg" alt="header image" padding="0px"></mj-image>
@@ -38,7 +37,7 @@ export const newCharacterHtml = (data?: any) => {
         Cosa aspetti? Effettua subito il login a <mj-button href="http://play.thegatmeud.it" style="text-decoration:underline; color: #ffbd02;">questo indirizzo</mj-button>
         con le credenziali che hai inserito e dai il via alla tua avventura!</mj-text>
         <mj-text align="center" color="#ffbd02" font-size="25px" font-family="Arial, sans-serif" font-weight="bold" line-height="35px" padding-top="20px">Il tuo personaggio:</mj-text>
-        <mj-table padding-left="20px" padding-right="20px" table-layout="fixed" align="center" width="80%">
+        <mj-table padding-left="20px" padding-right="20px" table-layout="fixed" align="center" width="80%" font-size="16px">
           <tr>
             <td style="padding: 0 15px; text-align:right;"><b>Nome</b></td>
             <td style="padding: 0 0 0 15px;"><u>${data.name}<u></td>
