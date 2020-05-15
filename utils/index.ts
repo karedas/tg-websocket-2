@@ -24,7 +24,6 @@ export const calcCodeFromHeaders = (headers: any) => {
   if (headers["user-agent"]) hash.update(headers["user-agent"]);
   if (headers["accept"]) hash.update(headers["accept"]);
   if (headers["accept-language"]) hash.update(headers["accept-language"]);
-
   if (headers["accept-encoding"]) hash.update(headers["accept-encoding"]);
 
   return hash.digest("hex");

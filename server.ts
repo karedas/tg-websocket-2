@@ -13,6 +13,7 @@ import compression from "compression";
 import http = require("http");
 import socketIo = require("socket.io");
 import { SocketConnection } from "./helpers/socketConnection";
+import sharedsession = require("express-socket.io-session");
 
 const session = expressSession({
   secret: "$eCuRiTy",
@@ -41,12 +42,19 @@ export const Logger = winston.createLogger({
   transports: transports,
 });
 
-function boot(app: Application, port: number) {
+const boot = (app: Application, port: string | number) => {
   const server = http.createServer(app);
+
   const io = socketIo.listen(server, {
     pingInterval: 2000,
     pingTimeout: 5000,
   });
+
+  io.use(
+    sharedsession(session, {
+      autoSave: true
+    })
+  );
 
   app.set("trust_proxy", 1);
   app.set("max_requests_per_ip", 20);
@@ -84,7 +92,6 @@ function boot(app: Application, port: number) {
     console.log(`App Listening on port ${port.toString()}`);
   });
 }
-
 // =================
 
 const app = express();
