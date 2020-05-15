@@ -20,14 +20,13 @@ export const transportMailer = nodemailer.createTransport({
 });
 
 export const registerNewCharacter = async (data: any) => {
-
   const Email = new EmailTemplates({
     transport: transportMailer,
     send: true,
     preview: false,
     message: {
       from: `The Gate Mud" ${config.mailserver.from}`,
-      subject: `Benvenuto su The Gate: ${data.name} è pronto a vivere su Ikhari!`,
+      subject: `Benvenuto su The Gate: ${data.general.name} è pronto a vivere su Ikhari!`,
     },
   });
 
@@ -35,8 +34,11 @@ export const registerNewCharacter = async (data: any) => {
     template: "new-character",
     message: {
       html: newCharacterHtml(data).html,
-      to: data.email,
+      to: data.general.email,
     },
   })
+    .then((res) => {
+      console.log("res.originalMessage", res.originalMessage);
+    })
     .catch(console.error);
 };

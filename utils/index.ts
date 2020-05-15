@@ -1,8 +1,10 @@
 import crypto from "crypto";
 
-export const getclientIp = (headers: any)  => {
+export const getclientIp = (headers: any) => {
   let ipAddress;
-  let forwardedIpsStr = headers["x-forwarded-for"];
+  let forwardedIpsStr =
+    headers["x-forwarded-for"] || headers.connection.remoteAddress || undefined;
+
   if (forwardedIpsStr) {
     let forwardedIps = forwardedIpsStr.split(",");
     ipAddress = forwardedIps[0];
@@ -14,7 +16,7 @@ export const getclientIp = (headers: any)  => {
     ipAddress = "unknown";
   }
   return ipAddress;
-}
+};
 
 // Calculate a code from headers
 export const calcCodeFromHeaders = (headers: any) => {
@@ -26,4 +28,4 @@ export const calcCodeFromHeaders = (headers: any) => {
   if (headers["accept-encoding"]) hash.update(headers["accept-encoding"]);
 
   return hash.digest("hex");
-}
+};

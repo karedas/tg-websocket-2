@@ -13,7 +13,7 @@ export const config = {
   ws_port: process.env.WS_PORT,
   api_port: process.env.API_PORT,
   mailserver: {
-    from: 'staff@thegatemud.it',
+    from: "staff@thegatemud.it",
     host: process.env.API_NODEMAILER_SMTP,
     port: +process.env.API_NODEMAILER_PORT,
     auth: {
@@ -21,6 +21,6 @@ export const config = {
       pass: process.env.API_NODEMAILER_PASS,
     },
     debug: process.env.NODE_ENV ? true : false,
-    logger: process.env.NODE_ENV ? true : false
+    logger: process.env.NODE_ENV ? true : false,
   },
 };

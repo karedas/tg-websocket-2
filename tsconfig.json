@@ -14,9 +14,13 @@
     "outDir": "build",
     "strictNullChecks": false,
     "baseUrl": ".",
-    "rootDir": ".",
     "typeRoots": ["@types/", "node_modules/@types"],
-    
+    "paths": {
+      "~/*": ["./*"],
+      "@/*": ["./*"],
+      "~~/*": ["./*"],
+      "@@/*": ["./*"]
+    }
   },
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

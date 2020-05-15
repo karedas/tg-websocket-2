@@ -8,7 +8,7 @@ import expressSession from "express-session";
 import cors from "cors";
 import winston from "winston";
 import express_socket_io_session from "express-socket.io-session";
-import compression from 'compression';
+import compression from "compression";
 
 import http = require("http");
 import socketIo = require("socket.io");
@@ -76,12 +76,12 @@ function boot(app: Application, port: number) {
   );
 
   io.on("connection", (socket) => {
-    const socketConnection =  new SocketConnection(server, socket);
+    const socketConnection = new SocketConnection(server, socket);
     socketConnection.init();
   });
 
   server.listen(port, () => {
-    console.log(`App Listening on port ${port}`);
+    console.log(`App Listening on port ${port.toString()}`);
   });
 }
 

@@ -1,17 +1,16 @@
 import mjml2Html from "mjml";
-import { attributes, cultures, ethnicities} from "../../models/registration_data/";
 import { getLocation } from "../../models/registration_data/locations";
 import { getEthnicity } from "../../models/registration_data/ethnicities";
+import { CharacterAccount } from "~/models/characterAccount.model";
 
 const gender = {
-  m: 'maschio',
-  f: 'femmina'
-}
+  m: "maschio",
+  f: "femmina",
+};
 
-
-export const newCharacterHtml = (data?: any) => {
+export const newCharacterHtml = (data?: CharacterAccount) => {
   const loc = getLocation(data.ethnicity, data.location);
-  const ethnicity = getEthnicity(data.race, data.ethnicity)
+  const ethnicity = getEthnicity(data.race, data.ethnicity);
 
   return mjml2Html(`
   <mjml>
@@ -31,24 +30,23 @@ export const newCharacterHtml = (data?: any) => {
     </mj-section>
     <mj-section padding-bottom="20px" padding-top="10px">
       <mj-column>
-        <mj-text align="center" padding="10px 25px" font-size="20px" color="#512d0b"><strong> ${data.name}, benvenuto nel mondo di Ikhari!</strong></mj-text>
-        <mj-text align="center" font-size="18px" font-family="Arial">Il tuo personaggio è stato creato con successo ed ora puoi finalmente entrare a far parte del mondo di The Gate.
-        <br /> <br /> </br />
-        Cosa aspetti? Effettua subito il login a <mj-button href="http://play.thegatmeud.it" style="text-decoration:underline; color: #ffbd02;">questo indirizzo</mj-button>
-        con le credenziali che hai inserito e dai il via alla tua avventura!</mj-text>
+        <mj-text align="center" padding="10px 25px" font-size="20px" color="#512d0b"><strong> ${
+          data.general.name
+        }, benvenuto nel mondo di Ikhari!</strong></mj-text>
+        <mj-text align="center" font-size="18px" font-family="Arial">Il tuo personaggio è stato creato con successo ed ora puoi finalmente entrare a far parte del mondo di The Gate. <br /> <br /> </br /> Cosa aspetti? Effettua subito il login a <mj-button href="http://play.thegatmeud.it" style="text-decoration:underline; color: #ffbd02;">questo indirizzo</mj-button> con le credenziali che hai inserito e dai il via alla tua avventura!</mj-text>
         <mj-text align="center" color="#ffbd02" font-size="25px" font-family="Arial, sans-serif" font-weight="bold" line-height="35px" padding-top="20px">Il tuo personaggio:</mj-text>
         <mj-table padding-left="20px" padding-right="20px" table-layout="fixed" align="center" width="80%" font-size="16px">
           <tr>
             <td style="padding: 0 15px; text-align:right;"><b>Nome</b></td>
-            <td style="padding: 0 0 0 15px;"><u>${data.name}<u></td>
+            <td style="padding: 0 0 0 15px;"><u>${data.general.name}<u></td>
           </tr>
           <tr>
             <td style="padding: 0 15px; text-align:right;"><b>Password</b></td>
-            <td style="padding: 0 0 0 15px;">${data.maskedPwd}</td>
+            <td style="padding: 0 0 0 15px;">${data.general.password}</td>
           </tr>
           <tr>
             <td style="padding: 0 15px; text-align:right;"><b>Genere</b></td>
-            <td style="padding: 0 0 0 15px;">${gender[data.gender]}</td>
+            <td style="padding: 0 0 0 15px;">${gender[data.general.gender]}</td>
           </tr>
           <tr>
             <td style="padding: 0 15px; text-align:right;"><b>Razza</b></td>

@@ -21,11 +21,12 @@ module.exports = {
       env: {
         API_PORT: 3336,
         NODE_ENV: "development",
+        SERVER_GAME_HOST: "localhost",
         SERVER_GAME_PORT: 7890,
         WS_HOST: "0.0.0.0",
         WS_PORT: 3335,
-        API_NODEMAILER_SMTP: 'smtp.mailtrap.io',
-        API_NODEMAILER_PORT: 2525
+        API_NODEMAILER_SMTP: "smtp.mailtrap.io",
+        API_NODEMAILER_PORT: 2525,
       },
     },
     // {

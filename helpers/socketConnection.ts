@@ -1,13 +1,13 @@
 import { calcCodeFromHeaders, getclientIp } from "../utils";
 import { Logger } from "../server";
 import * as net from "net";
-import { config } from "../core/config";
+import { NetConnection } from "./netConnection";
 
 const {
   env: { SERVER_GAME_PORT },
 } = process;
 
-export class SocketConnection {
+export class SocketConnection extends NetConnection {
   inGame: boolean;
   user: string;
   socket: SocketIO.Socket;
@@ -20,10 +20,10 @@ export class SocketConnection {
   };
 
   constructor(server: any, socket: SocketIO.Socket) {
+    super();
     this.inGame = false;
     this.user = "";
     this.socket = socket;
-    this.tgConn = null;
     this.userNetInfo = {
       ipAddress: "",
       iTime: null,
@@ -35,7 +35,7 @@ export class SocketConnection {
   init() {
     this.socket.emit("auth", '&!connmsg{"msg":"ready"}!');
 
-    this.socket.on("disconnect", this.closeServerConnection);
+    this.socket.on("disconnect", this.tgConn.destroy);
 
     this.socket.on("oob", (when) => {
       if (when["itime"]) {
@@ -46,43 +46,34 @@ export class SocketConnection {
           this.socket.handshake.headers
         );
         this.connectToGameServer();
-	  } else {
-		  this.closeServerConnection();
-	  }
+      } else {
+        this.tgConn.destroy();
+      }
     });
   }
 
   connectToGameServer = () => {
-    this.tgConn = net.connect(<net.NetConnectOpts>{
-      host: <any>config.game_host,
-      port: <any>config.game_port,
-    });
-
-    this.tgConn.on("close", () => {
-      this.socket.disconnect();
-    });
-
-    this.tgConn.on("error", () => {
-      this.sendToClient('&!connmsg{"msg":"serverdown"}!');
-      this.socket.disconnect();
-    });
-
-    this.tgConn.on("end", () => {
-      this.socket.disconnect();
-    });
-
-    this.tgConn.on("timeout", () => {
-      this.socket.disconnect();
-    });
-
-    this.tgConn.on("data", this.handshake.bind(this));
-  };
-
-  closeServerConnection() {
     if (this.tgConn) {
-      this.tgConn.destroy();
+      this.tgConn.on("close", () => {
+        this.socket.disconnect();
+      });
+
+      this.tgConn.on("error", () => {
+        this.sendToClient('&!connmsg{"msg":"serverdown"}!');
+        this.socket.disconnect();
+      });
+
+      this.tgConn.on("end", () => {
+        this.socket.disconnect();
+      });
+
+      this.tgConn.on("timeout", () => {
+        this.socket.disconnect();
+      });
+
+      this.tgConn.on("data", this.handshake.bind(this));
     }
-  }
+  };
 
   handshake = (data?: Buffer) => {
     if (data.toString().indexOf("Vuoi i codici ANSI") !== -1) {
@@ -115,9 +106,5 @@ export class SocketConnection {
     } else {
       this.socket.emit("auth", data.toString());
     }
-  };
-
-  sendToServer = (data: any) => {
-    this.tgConn.write(data + "\n");
   };
 }
